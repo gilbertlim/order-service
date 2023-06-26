@@ -5,7 +5,10 @@ import com.gilbert.msa.domain.dto.OrderDto;
 import com.gilbert.msa.domain.dto.OrderFormDto;
 import com.gilbert.msa.domain.dto.ProductDto;
 import com.gilbert.msa.domain.entity.Order;
+import com.gilbert.msa.domain.entity.OrderItem;
+import com.gilbert.msa.domain.mapper.OrderItemMapper;
 import com.gilbert.msa.domain.mapper.OrderMapper;
+import com.gilbert.msa.repository.OrderItemRepository;
 import com.gilbert.msa.repository.OrderRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,13 +22,18 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class OrderService {
 
-    private final OrderRepository repository;
-    private final OrderMapper mapper;
+    private final OrderRepository orderRepository;
+
+    private final OrderItemRepository orderItemRepository;
+
+    private final OrderMapper orderMapper;
+
+    private final OrderItemMapper orderItemMapper;
 
     private final ProductFeignClient productFeignClient;
 
     @Transactional
-    public void createOrder(OrderFormDto orderFormDto) {
+    public void createOrder(OrderFormDto orderFormDto) throws Exception {
         List<ProductDto> productDtoList = orderFormDto.getProductDtoList();
         
         List<Integer> productIds = orderFormDto.getProductDtoList().stream()
@@ -40,31 +48,42 @@ public class OrderService {
                 if (dto.getProductId().equals(info.getProductId())) {
                     if (dto.getQuantity() > info.getQuantity()) {
                         log.error("재고 수량이 부족합니다. 상품:{}, 요청:{}/재고:{}", info.getProductName(), dto.getQuantity(), info.getQuantity());
+                        throw new RuntimeException("재고 수량 부족");
                     }
                 }
             }
         }
 
+//        orderRepository.save(orderMapper.toEntity(orderFormDto));
 
-        //        repository.save(mapper.toEntity(orderDto));
+
+        List<OrderItem> orderItems = productDtoList.stream()
+            .map(p -> {
+                OrderItem orderItem = orderItemMapper.toEntity(p);
+                orderItem.setOrder(orderMapper.toEntity(orderFormDto));
+                return orderItem;
+            })
+            .toList();
+
+        orderItemRepository.saveAll(orderItems);
     }
 
     public OrderDto getOrder(Long id) {
 
-        Order entity = repository.findById(id)
+        Order entity = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Couldn't find id: " + id));
-        return mapper.toDto(entity);
+        return orderMapper.toDto(entity);
     }
 
     public List<OrderDto> getOrders() {
-        return repository.findAll()
+        return orderRepository.findAll()
             .stream()
-            .map(mapper::toDto)
+            .map(orderMapper::toDto)
             .toList();
     }
 
     @Transactional
     public void cancelOrder(OrderDto dto) {
-        repository.delete(mapper.toEntity(dto));
+        orderRepository.delete(orderMapper.toEntity(dto));
     }
 }

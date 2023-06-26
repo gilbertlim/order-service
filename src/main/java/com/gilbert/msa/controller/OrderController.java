@@ -23,7 +23,7 @@ public class OrderController {
     private final OrderService service;
 
     @PostMapping
-    public void createOrder(@RequestBody OrderFormDto requestDto) {
+    public void createOrder(@RequestBody OrderFormDto requestDto) throws Exception {
         log.info("createOrder");
         service.createOrder(requestDto);
     }
