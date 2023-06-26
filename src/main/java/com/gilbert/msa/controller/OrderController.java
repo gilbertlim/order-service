@@ -1,6 +1,7 @@
 package com.gilbert.msa.controller;
 
 import com.gilbert.msa.domain.dto.OrderDto;
+import com.gilbert.msa.domain.dto.OrderFormDto;
 import com.gilbert.msa.service.OrderService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,15 +23,15 @@ public class OrderController {
     private final OrderService service;
 
     @PostMapping
-    public void createOrder(@RequestBody OrderDto requestDto) {
+    public void createOrder(@RequestBody OrderFormDto requestDto) {
         log.info("createOrder");
         service.createOrder(requestDto);
     }
 
-    @GetMapping("/{orderNum}")
-    public OrderDto getOrder(@PathVariable Long orderNum) {
+    @GetMapping("/{orderId}")
+    public OrderDto getOrder(@PathVariable Long orderId) {
         log.info("getOrder");
-        return service.getOrder(orderNum);
+        return service.getOrder(orderId);
     }
 
     @GetMapping

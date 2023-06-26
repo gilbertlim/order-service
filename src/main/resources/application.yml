@@ -19,6 +19,16 @@ spring:
     init:
       mode: always
 
+feign:
+  client:
+    config:
+      default:
+        logger-level: FULL
+
+service:
+  product:
+    base-url: http://product:8080
+
 logging:
   pattern:
     level: '%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]'
