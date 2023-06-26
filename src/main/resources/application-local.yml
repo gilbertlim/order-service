@@ -1,9 +1,7 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
-  profiles:
-    active: local
   application:
     name: "order"
   datasource:
@@ -27,7 +25,7 @@ feign:
 
 service:
   product:
-    base-url: http://product:8080
+    base-url: http://localhost:8082
 
 logging:
   pattern:

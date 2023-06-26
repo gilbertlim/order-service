@@ -20,8 +20,8 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long orderNum;
+    private Long order_id;
 
     @Column
-    private int memberNum;
+    private String member_id;
 }
