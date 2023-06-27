@@ -1,7 +1,7 @@
 package com.gilbert.msa.controller;
 
-import com.gilbert.msa.domain.dto.OrderDto;
-import com.gilbert.msa.domain.dto.OrderFormDto;
+import com.gilbert.msa.service.dto.OrderDto;
+import com.gilbert.msa.service.dto.OrderFormRequestDto;
 import com.gilbert.msa.service.OrderService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +23,9 @@ public class OrderController {
     private final OrderService service;
 
     @PostMapping
-    public void createOrder(@RequestBody OrderFormDto requestDto) throws Exception {
+    public String createOrder(@RequestBody OrderFormRequestDto requestDto) {
         log.info("createOrder");
-        service.createOrder(requestDto);
+        return service.createOrder(requestDto);
     }
 
     @GetMapping("/{orderId}")
@@ -40,9 +40,9 @@ public class OrderController {
         return service.getOrders();
     }
 
-    @DeleteMapping
-    public void cancelOrder(@RequestBody OrderDto requestDto) {
+    @DeleteMapping("/{orderId}")
+    public void cancelOrder(@PathVariable Long orderId) {
         log.info("cancelOrder");
-        service.cancelOrder(requestDto);
+        service.cancelOrder(orderId);
     }
 }

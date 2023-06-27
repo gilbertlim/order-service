@@ -1,15 +1,14 @@
 package com.gilbert.msa.service;
 
 import com.gilbert.msa.client.ProductFeignClient;
-import com.gilbert.msa.domain.dto.OrderDto;
-import com.gilbert.msa.domain.dto.OrderFormDto;
-import com.gilbert.msa.domain.dto.ProductDto;
 import com.gilbert.msa.domain.entity.Order;
 import com.gilbert.msa.domain.entity.OrderItem;
-import com.gilbert.msa.domain.mapper.OrderItemMapper;
-import com.gilbert.msa.domain.mapper.OrderMapper;
 import com.gilbert.msa.repository.OrderItemRepository;
 import com.gilbert.msa.repository.OrderRepository;
+import com.gilbert.msa.service.dto.OrderDto;
+import com.gilbert.msa.service.dto.OrderFormRequestDto;
+import com.gilbert.msa.service.dto.ProductDto;
+import com.gilbert.msa.service.mapper.OrderMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,48 +27,49 @@ public class OrderService {
 
     private final OrderMapper orderMapper;
 
-    private final OrderItemMapper orderItemMapper;
-
     private final ProductFeignClient productFeignClient;
 
     @Transactional
-    public void createOrder(OrderFormDto orderFormDto) throws Exception {
-        List<ProductDto> productDtoList = orderFormDto.getProductDtoList();
-        
-        List<Integer> productIds = orderFormDto.getProductDtoList().stream()
+    public String createOrder(OrderFormRequestDto orderFormDto) {
+        validateProductQuantity(orderFormDto);
+
+//        Order order = orderMapper.toEntity(orderFormDto);
+
+        List<OrderItem> orderItems = orderFormDto.getProductDtos().stream()
+            .map(p -> new OrderItem(p.getProductId(), p.getQuantity()))
+            .toList();
+
+        Order order = new Order(orderFormDto.getMemberId(), orderItems);
+
+        orderRepository.save(order);
+
+//        orderItemRepository.saveAll(orderItems);
+
+        log.info("주문 완료");
+        return "주문이 완료되었습니다.";
+    }
+
+    private void validateProductQuantity(OrderFormRequestDto orderFormDto) {
+        List<ProductDto> requestProductDtos = orderFormDto.getProductDtos();
+
+        List<Long> productIds = orderFormDto.getProductDtos().stream()
             .map(ProductDto::getProductId)
             .toList();
 
-        
-        List<ProductDto> productInfos = productFeignClient.getProducts(productIds);
-        
-        for (ProductDto dto : productDtoList) {
-            for ( ProductDto info : productInfos) {
-                if (dto.getProductId().equals(info.getProductId())) {
-                    if (dto.getQuantity() > info.getQuantity()) {
-                        log.error("재고 수량이 부족합니다. 상품:{}, 요청:{}/재고:{}", info.getProductName(), dto.getQuantity(), info.getQuantity());
-                        throw new RuntimeException("재고 수량 부족");
-                    }
-                }
-            }
+        List<ProductDto> responseProductDtos = productFeignClient.getProducts(productIds);
+
+        for (ProductDto req : requestProductDtos) {
+            responseProductDtos.stream()
+                .filter(res -> res.getProductId().equals(req.getProductId()))
+                .filter(res -> res.getQuantity() < req.getQuantity())
+                .forEach(res -> {
+                    log.error("재고 수량이 부족합니다. 상품:{}, 요청:{}/재고:{}", res.getProductName(), req.getQuantity(), res.getQuantity());
+                    throw new RuntimeException("재고 수량 부족");
+                });
         }
-
-//        orderRepository.save(orderMapper.toEntity(orderFormDto));
-
-
-        List<OrderItem> orderItems = productDtoList.stream()
-            .map(p -> {
-                OrderItem orderItem = orderItemMapper.toEntity(p);
-                orderItem.setOrder(orderMapper.toEntity(orderFormDto));
-                return orderItem;
-            })
-            .toList();
-
-        orderItemRepository.saveAll(orderItems);
     }
 
     public OrderDto getOrder(Long id) {
-
         Order entity = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Couldn't find id: " + id));
         return orderMapper.toDto(entity);
@@ -83,7 +83,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void cancelOrder(OrderDto dto) {
-        orderRepository.delete(orderMapper.toEntity(dto));
+    public void cancelOrder(Long orderId) {
+        orderRepository.deleteById(orderId);
     }
 }

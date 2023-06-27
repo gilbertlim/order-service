@@ -1,4 +1,4 @@
-package com.gilbert.msa.domain.dto;
+package com.gilbert.msa.service.dto;
 
 import lombok.Getter;
 import lombok.Setter;

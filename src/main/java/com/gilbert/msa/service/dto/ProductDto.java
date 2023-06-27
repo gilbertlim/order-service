@@ -1,4 +1,4 @@
-package com.gilbert.msa.domain.dto;
+package com.gilbert.msa.service.dto;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class ProductDto extends OrderDto {
 
-    private Integer productId;
+    private Long productId;
     private String productName;
     private Integer price;
     private Integer quantity;
