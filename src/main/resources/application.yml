@@ -19,15 +19,13 @@ spring:
     init:
       mode: always
 
-feign:
+grpc:
   client:
-    config:
-      default:
-        logger-level: FULL
-
-service:
-  product:
-    base-url: http://product:8080
+    product:
+      address: 'static://product:9090'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
 
 logging:
   pattern:
