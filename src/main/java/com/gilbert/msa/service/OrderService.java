@@ -33,8 +33,6 @@ public class OrderService {
     public String createOrder(OrderFormRequestDto orderFormDto) {
         validateProductQuantity(orderFormDto);
 
-//        Order order = orderMapper.toEntity(orderFormDto);
-
         List<OrderItem> orderItems = orderFormDto.getProductDtos().stream()
             .map(p -> new OrderItem(p.getProductId(), p.getQuantity()))
             .toList();
@@ -43,27 +41,25 @@ public class OrderService {
 
         orderRepository.save(order);
 
-//        orderItemRepository.saveAll(orderItems);
-
         log.info("주문 완료");
         return "주문이 완료되었습니다.";
     }
 
     private void validateProductQuantity(OrderFormRequestDto orderFormDto) {
-        List<ProductDto> requestProductDtos = orderFormDto.getProductDtos();
+        List<ProductDto> orderedProducts = orderFormDto.getProductDtos();
 
-        List<Long> productIds = orderFormDto.getProductDtos().stream()
+        List<Long> orderedProductIds = orderFormDto.getProductDtos().stream()
             .map(ProductDto::getProductId)
             .toList();
 
-        List<ProductDto> responseProductDtos = productFeignClient.getProducts(productIds);
+        List<ProductDto> responseProducts = productFeignClient.getProducts(orderedProductIds);
 
-        for (ProductDto req : requestProductDtos) {
-            responseProductDtos.stream()
-                .filter(res -> res.getProductId().equals(req.getProductId()))
-                .filter(res -> res.getQuantity() < req.getQuantity())
-                .forEach(res -> {
-                    log.error("재고 수량이 부족합니다. 상품:{}, 요청:{}/재고:{}", res.getProductName(), req.getQuantity(), res.getQuantity());
+        for (ProductDto ordered : orderedProducts) {
+            responseProducts.stream()
+                .filter(current -> current.getProductId().equals(ordered.getProductId()))
+                .filter(current -> current.getQuantity() < ordered.getQuantity())
+                .forEach(current -> {
+                    log.error("재고 수량이 부족합니다. 상품:{}, 요청:{}/재고:{}", current.getProductName(), ordered.getQuantity(), current.getQuantity());
                     throw new RuntimeException("재고 수량 부족");
                 });
         }
