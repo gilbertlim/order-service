@@ -3,7 +3,6 @@ package com.gilbert.msa.service;
 import com.gilbert.msa.client.ProductFeignClient;
 import com.gilbert.msa.domain.entity.Order;
 import com.gilbert.msa.domain.entity.OrderItem;
-import com.gilbert.msa.repository.OrderItemRepository;
 import com.gilbert.msa.repository.OrderRepository;
 import com.gilbert.msa.service.dto.OrderDto;
 import com.gilbert.msa.service.dto.OrderFormRequestDto;
@@ -22,8 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-
-    private final OrderItemRepository orderItemRepository;
 
     private final OrderMapper orderMapper;
 
