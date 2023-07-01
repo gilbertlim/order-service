@@ -1,12 +1,12 @@
 package com.gilbert.msa.service;
 
-import com.gilbert.msa.client.ProductFeignClient;
 import com.gilbert.msa.domain.entity.Order;
 import com.gilbert.msa.domain.entity.OrderItem;
 import com.gilbert.msa.repository.OrderRepository;
 import com.gilbert.msa.service.dto.OrderDto;
-import com.gilbert.msa.service.dto.OrderFormRequestDto;
+import com.gilbert.msa.domain.dto.OrderFormRequestDto;
 import com.gilbert.msa.service.dto.ProductDto;
+import com.gilbert.msa.service.inner.InnerOrderService;
 import com.gilbert.msa.service.mapper.OrderMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -24,17 +24,17 @@ public class OrderService {
 
     private final OrderMapper orderMapper;
 
-    private final ProductFeignClient productFeignClient;
+    private final InnerOrderService innerOrderService;
 
     @Transactional
-    public String createOrder(OrderFormRequestDto orderFormDto) {
-        validateProductQuantity(orderFormDto);
+    public String createOrder(OrderFormRequestDto orderFormRequestDto) {
+        validateProductQuantity(orderFormRequestDto);
 
-        List<OrderItem> orderItems = orderFormDto.getProductDtos().stream()
+        List<OrderItem> orderItems = orderFormRequestDto.getProductDtos().stream()
             .map(p -> new OrderItem(p.getProductId(), p.getQuantity()))
             .toList();
 
-        Order order = new Order(orderFormDto.getMemberId(), orderItems);
+        Order order = new Order(orderFormRequestDto.getMemberId(), orderItems);
 
         orderRepository.save(order);
 
@@ -49,10 +49,10 @@ public class OrderService {
             .map(ProductDto::getProductId)
             .toList();
 
-        List<ProductDto> responseProducts = productFeignClient.getProducts(orderedProductIds);
+        List<ProductDto> currentProducts = innerOrderService.getProducts(orderedProductIds);
 
         for (ProductDto ordered : orderedProducts) {
-            responseProducts.stream()
+            currentProducts.stream()
                 .filter(current -> current.getProductId().equals(ordered.getProductId()))
                 .filter(current -> current.getQuantity() < ordered.getQuantity())
                 .forEach(current -> {
