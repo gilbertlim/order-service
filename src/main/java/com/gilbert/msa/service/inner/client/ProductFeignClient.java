@@ -1,4 +1,4 @@
-package com.gilbert.msa.client;
+package com.gilbert.msa.service.inner.client;
 
 import com.gilbert.msa.service.dto.ProductDto;
 import java.util.List;

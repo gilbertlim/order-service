@@ -1,7 +1,7 @@
 package com.gilbert.msa.controller;
 
 import com.gilbert.msa.service.dto.OrderDto;
-import com.gilbert.msa.service.dto.OrderFormRequestDto;
+import com.gilbert.msa.domain.dto.OrderFormRequestDto;
 import com.gilbert.msa.service.OrderService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
