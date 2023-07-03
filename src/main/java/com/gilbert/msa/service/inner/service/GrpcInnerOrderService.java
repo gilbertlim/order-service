@@ -13,8 +13,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
-@Service
 @ConditionalOnProperty(name = "inner-communication.method", havingValue = "grpc")
+@Service
 public class GrpcInnerOrderService implements InnerOrderService {
 
     private final GrpcMapper grpcMapper;
