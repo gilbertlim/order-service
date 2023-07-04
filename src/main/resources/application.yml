@@ -1,6 +1,3 @@
-server:
-  port: 8080
-
 spring:
   profiles:
     active: local
@@ -19,6 +16,9 @@ spring:
     init:
       mode: always
 
+server:
+  port: 8080
+
 inner-communication:
   method: feign # feign or grpc
 
@@ -29,15 +29,10 @@ feign:
       default:
         logger-level: FULL
 
-service:
-  product:
-    base-url: http://product:8080
-
 # grpc
 grpc:
   client:
     product:
-      address: 'static://product:9090'
       enableKeepAlive: true
       keepAliveWithoutCalls: true
       negotiationType: plaintext

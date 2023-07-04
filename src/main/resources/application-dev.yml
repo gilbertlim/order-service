@@ -1,0 +1,10 @@
+# feign
+service:
+  product:
+    base-url: http://product:8080
+
+# grpc
+grpc:
+  client:
+    product:
+      address: 'static://product:9090'

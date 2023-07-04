@@ -1,7 +1,7 @@
-# feign
 server:
   port: 8081
 
+# feign
 service:
   product:
     base-url: http://localhost:8082
@@ -11,6 +11,3 @@ grpc:
   client:
     product:
       address: 'static://localhost:9092'
-      enableKeepAlive: true
-      keepAliveWithoutCalls: true
-      negotiationType: plaintext
